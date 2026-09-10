@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ստվերների Տարեգրություն Mobile PWA</title>
+
+<!-- Mobile Web App Metas -->
+<meta name="theme-color" content="#0B0908">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ստվերներ">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Cormorant+Garamond:ital,wght@0,500;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg: #0B0908;
+    --bg-panel: #15100C;
+    --bg-card: #1D1611;
+    --border: #3A2E22;
+    --border-soft: #2A211A;
+    --text: #E7DEC7;
+    --text-muted: #978A70;
+    --gold: #C9A227;
+    --gold-bright: #E9C860;
+    --ember-bright: #E8654F;
+    --ember-dim: #4A241E;
+    --success: #2ECC71;
+    --danger: #E74C3C;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  body{
+    margin:0;
+    background: var(--bg);
+    background-image: radial-gradient(ellipse at top, #1A140F 0%, #0B0908 60%);
+    color: var(--text);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    padding: 16px 12px 60px;
+    user-select: none;
+  }
+  .wrap{max-width:500px; margin:0 auto;}
+  header{ text-align:center; margin-bottom:16px; position: relative;}
+  h1{
+    font-family:'Cinzel', serif;
+    font-weight:700;
+    font-size:22px;
+    letter-spacing:0.04em;
+    margin:0 0 4px;
+    color: var(--gold-bright);
+    text-transform:uppercase;
+  }
+  .subtitle{
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    font-size:14px;
+    color: var(--text-muted);
+    margin:0 0 10px;
+  }
+  
+  /* Install & Music Buttons */
+  .header-actions {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .app-btn {
+    background: linear-gradient(180deg, #3A2E22, #1D1611);
+    border: 1px solid var(--gold);
+    color: var(--gold-bright);
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: 'Cinzel', serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .panel{
+    background: var(--bg-panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px;
+    margin-bottom:12px;
+  }
+  .char-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .rank-title{
+    font-family:'Cinzel', serif;
+    font-size:15px;
+    font-weight:600;
+    color: var(--gold-bright);
+  }
+  .level-badge{
+    font-family:'Cinzel', serif;
+    font-size:12px;
+    color: var(--text-muted);
+  }
+  .gold-badge{
+    font-family:'Cinzel', serif;
+    font-size:13px;
+    color: var(--gold-bright);
+  }
+  .xp-bar-track{
+    height:8px;
+    background: var(--bg-card);
+    border:1px solid var(--border-soft);
+    border-radius:6px;
+    overflow:hidden;
+  }
+  .xp-bar-fill{
+    height:100%;
+    background: linear-gradient(90deg, var(--ember-dim), var(--gold));
+    transition: width .4s ease;
+  }
+  .xp-label{
+    font-size:10.5px;
+    color: var(--text-muted);
+    margin-top:4px;
+    text-align:right;
+  }
+
+  /* 2D MOBILE PIXEL DISPLAY */
+  .avatar-display-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: 10px;
+    padding: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .pixel-character {
+    width: 220px;
+    height: 220px;
+    animation: idleBreath 2.5s ease-in-out infinite;
+    filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.85));
+    cursor: pointer;
+  }
+
+  @keyframes idleBreath {
+    0%, 100% { transform: translateY(0px) scaleY(1); }
+    50% { transform: translateY(-4px) scaleY(1.01); }
+  }
+
+  /* EQUIPMENT EFFECTS */
+  .orb-glow { animation: magicPulse 1.5s ease-in-out infinite alternate; }
+  @keyframes magicPulse {
+    0% { opacity: 0.6; filter: drop-shadow(0 0 2px #e100ff); }
+    100% { opacity: 1; filter: drop-shadow(0 0 8px #ff0055); }
+  }
+  .golden-aura-anim { animation: auraPulse 1.2s ease-in-out infinite alternate; }
+  @keyframes auraPulse {
+    0% { opacity: 0.3; transform: scale(0.98); }
+    100% { opacity: 0.9; transform: scale(1.03); }
+  }
+  .dark-aura-anim { animation: darkAuraPulse 1.8s ease-in-out infinite alternate; }
+  @keyframes darkAuraPulse {
+    0% { opacity: 0.4; filter: drop-shadow(0 0 3px #9d00ff); }
+    100% { opacity: 0.95; filter: drop-shadow(0 0 12px #9d00ff); }
+  }
+  .sword-glow { animation: swordGlow 1s ease-in-out infinite alternate; }
+  @keyframes swordGlow {
+    0% { filter: drop-shadow(0 0 2px #00e1ff); }
+    100% { filter: drop-shadow(0 0 8px #0055ff); }
+  }
+
+  /* Magic Burst Particle */
+  .magic-particle {
+    position: absolute;
+    pointer-events: none;
+    border-radius: 2px;
+    animation: particleFly 0.8s ease-out forwards;
+    z-index: 10;
+  }
+  @keyframes particleFly {
+    0% { opacity: 1; transform: translate(0, 0) scale(1); }
+    100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0); }
+  }
+
+  .hint-3d {
+    font-size: 10.5px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+  }
+
+  .shop-grid, .inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .item-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    padding: 8px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .item-card.equipped {
+    border-color: var(--gold);
+    background: rgba(201, 162, 39, 0.08);
+  }
+  .item-title {
+    font-size: 11px;
+    font-family: 'Cinzel', serif;
+    margin-top: 4px;
+  }
+  .item-price {
+    font-size: 10.5px;
+    color: var(--gold-bright);
+    margin: 2px 0;
+  }
+
+  .section-title{
+    font-family:'Cinzel', serif;
+    font-size:11.5px;
+    letter-spacing:0.04em;
+    color: var(--text-muted);
+    margin-bottom:8px;
+    text-transform:uppercase;
+  }
+
+  .diff-selector {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .diff-btn {
+    flex: 1;
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    color: var(--text-muted);
+    padding: 8px 4px;
+    border-radius: 6px;
+    font-size: 10px;
+    cursor: pointer;
+    text-align: center;
+    font-family: 'Cinzel', serif;
+  }
+  .diff-btn.active[data-diff="easy"] { border-color: #2ECC71; color: #2ECC71; background: rgba(46, 204, 113, 0.1); }
+  .diff-btn.active[data-diff="medium"] { border-color: #F39C12; color: #F39C12; background: rgba(243, 156, 18, 0.1); }
+  .diff-btn.active[data-diff="hard"] { border-color: #E74C3C; color: #E74C3C; background: rgba(231, 76, 60, 0.1); }
+
+  .task-input-group {
+    display: flex;
+    gap: 6px;
+  }
+  .task-input-group input {
+    flex: 1;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    color: var(--text);
+    font-size: 13px;
+  }
+
+  .task-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 8px;
+  }
+  .task-header { display: flex; justify-content: space-between; align-items: center; }
+  .task-title { font-size: 13.5px; }
+  .task-actions { display: flex; gap: 6px; margin-top: 8px; }
+
+  button{
+    background: linear-gradient(180deg, #8B2E22, #6B1F17);
+    color: var(--text);
+    border:1px solid #4A241E;
+    padding:8px 12px;
+    border-radius:8px;
+    font-size:11px;
+    cursor:pointer;
+    font-family:'Cinzel', serif;
+    text-transform:uppercase;
+  }
+  button.secondary{ background: transparent; border:1px solid var(--border); color: var(--text-muted); padding:6px; font-size:10px; }
+  button.btn-success { background: linear-gradient(180deg, #27ae60, #1e8449); border-color: #196f3d; width: 100%; }
+  button.btn-danger { background: linear-gradient(180deg, #c0392b, #922b21); border-color: #76231a; width: 100%; }
+
+  .lore-toast{
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(20px);
+    background: var(--bg-panel); border:1px solid var(--gold); border-radius:10px;
+    padding:12px 18px; width:90%; text-align:center; opacity:0;
+    pointer-events:none; transition: all .35s ease; z-index:100;
+  }
+  .lore-toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .lore-toast .lore-title{ font-family:'Cinzel', serif; font-size:12px; color: var(--gold-bright); }
+  .lore-toast .lore-text{ font-family:'Cormorant Garamond', serif; font-style:italic; font-size:14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Ստվերների Տարեգրություն</h1>
+    <p class="subtitle">Սահմանիր առաջադրանքը, հաղթահարիր և ստացիր պարգևը</p>
+    <div class="header-actions">
+      <button class="app-btn" id="install-btn" style="display:none;" onclick="installPWA()">📲 Տեղադրել Հավելվածը</button>
+      <button class="app-btn" id="audio-toggle-btn" onclick="toggleAudio()">🎵 Golden Brown: Անջատված</button>
+    </div>
+  </header>
+
+  <audio id="bg-music" loop preload="auto">
+    <source src="https://ia801503.us.archive.org/15/items/TheStranglersGoldenBrown/The%20Stranglers%20-%20Golden%20Brown.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Status Panel -->
+  <div class="panel">
+    <div class="char-row">
+      <span class="rank-title" id="rank-title">—</span>
+      <span class="level-badge" id="level-badge">—</span>
+      <span class="gold-badge">🪙 <span id="gold-val">0</span></span>
+    </div>
+    <div class="xp-bar-track"><div class="xp-bar-fill" id="xp-fill" style="width:0%"></div></div>
+    <div class="xp-label" id="xp-label">— XP</div>
+  </div>
+
+  <!-- 2D CHARACTER DISPLAY PANEL -->
+  <div class="panel">
+    <div class="section-title">Ինտերակտիվ Ստվերային Նեկրոմանտ</div>
+    <div class="avatar-display-container" id="avatar-box">
+      <svg id="necromancer" class="pixel-character" viewBox="0 0 32 32" shape-rendering="crispEdges">
+        <rect x="10" y="28" width="12" height="2" fill="#120520" />
+        
+        <g id="layer-aura" style="display:none;" class="golden-aura-anim">
+          <circle cx="16" cy="16" r="14" fill="none" stroke="#E9C860" stroke-width="1" opacity="0.4" stroke-dasharray="2,2"/>
+        </g>
+        <g id="layer-dark_aura" style="display:none;" class="dark-aura-anim">
+          <circle cx="16" cy="16" r="15" fill="none" stroke="#9D00FF" stroke-width="1.5" opacity="0.6"/>
+        </g>
+        <g id="layer-base-body">
+          <rect x="11" y="14" width="10" height="14" fill="#1A1228" />
+          <rect x="10" y="16" width="12" height="12" fill="#1A1228" />
+          <rect x="9" y="19" width="14" height="9" fill="#120B1C" />
+        </g>
+        <g id="layer-cloak" style="display:none;">
+          <rect x="8" y="14" width="16" height="14" fill="#4A4A5A" />
+        </g>
+        <g id="layer-royal_cloak" style="display:none;">
+          <rect x="8" y="14" width="16" height="14" fill="#6B1F17" />
+          <rect x="8" y="14" width="16" height="2" fill="#E9C860" />
+        </g>
+        <g id="layer-armor" style="display:none;">
+          <rect x="11" y="15" width="10" height="10" fill="#7F8C8D" />
+        </g>
+        <g id="layer-necromancer_hood" style="display:none;">
+          <rect x="10" y="5" width="12" height="3" fill="#1A1228" />
+          <rect x="9" y="7" width="14" height="7" fill="#1A1228" />
+        </g>
+        <rect x="11" y="7" width="10" height="6" fill="#05020A" />
+        
+        <!-- Eyes -->
+        <g id="left-eye"><rect x="13" y="9" width="2" height="2" fill="#FF0055" /><rect x="13" y="9" width="1" height="1" fill="#FFFFFF" /></g>
+        <g id="right-eye"><rect x="17" y="9" width="2" height="2" fill="#FF0055" /><rect x="17" y="9" width="1" height="1" fill="#FFFFFF" /></g>
+
+        <g id="layer-crown" style="display:none;"><rect x="11" y="2" width="10" height="3" fill="#E9C860" /></g>
+        <g id="layer-helmet" style="display:none;"><rect x="10" y="3" width="12" height="7" fill="#7F8C8D" /></g>
+        <g id="layer-skull_necklace" style="display:none;"><rect x="15" y="13" width="2" height="2" fill="#E0D7C6" /></g>
+        <g id="layer-shield" style="display:none;"><rect x="22" y="14" width="6" height="9" fill="#3498DB" /></g>
+        <g id="layer-sword" style="display:none;" class="sword-glow"><rect x="24" y="5" width="2" height="16" fill="#ECF0F1" /></g>
+        <g id="layer-dark_staff" style="display:none;">
+          <rect x="6" y="8" width="2" height="21" fill="#3D2314" />
+          <g class="orb-glow"><rect x="5" y="1" width="4" height="2" fill="#9D00FF" /></g>
+        </g>
+      </svg>
+      <div class="hint-3d">👀 Շարժիր մատդ էկրանին | 🖱️ Կտտացրու կերպարին</div>
+    </div>
+  </div>
+
+  <!-- ADD TASK FORM -->
+  <div class="panel">
+    <div class="section-title">Պլանավորել Նոր Առաջադրանք</div>
+    <div class="task-input-group">
+      <input type="text" id="task-title-input" placeholder="Ի՞նչ է պետք անել...">
+      <button id="add-task-btn">+</button>
+    </div>
+    
+    <div class="diff-selector">
+      <div class="diff-btn active" data-diff="easy" onclick="setDifficulty('easy')">🟢 Հեշտ</div>
+      <div class="diff-btn" data-diff="medium" onclick="setDifficulty('medium')">🟡 Միջին</div>
+      <div class="diff-btn" data-diff="hard" onclick="setDifficulty('hard')">🔴 Դժվար</div>
+    </div>
+  </div>
+
+  <!-- ACTIVE TASKS LIST -->
+  <div class="panel">
+    <div class="section-title">Ընթացիկ Առաջադրանքներ</div>
+    <div id="tasks-list"></div>
+  </div>
+
+  <!-- INVENTORY PANEL -->
+  <div class="panel">
+    <div class="section-title">Ինվենտար</div>
+    <div class="inventory-grid" id="inventory-grid"></div>
+  </div>
+
+  <!-- SHOP PANEL -->
+  <div class="panel">
+    <div class="section-title">Խանութ</div>
+    <div class="shop-grid" id="shop-grid"></div>
+  </div>
+</div>
+
+<div class="lore-toast" id="lore-toast">
+  <div class="lore-title" id="lore-title"></div>
+  <div class="lore-text" id="lore-text"></div>
+</div>
+
+<!-- Dynamic PWA Manifest & Service Worker Script Injection -->
+<script>
+// 1. INLINE MANIFEST GENERATION (PWA Setup)
+const manifestData = {
+  "name": "Ստվերների Տարեգրություն",
+  "short_name": "Ստվերներ",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0B0908",
+  "theme_color": "#0B0908",
+  "icons": [{
+    "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>",
+    "sizes": "192x192 512x512",
+    "type": "image/svg+xml"
+  }]
+};
+const manifestBlob = new Blob([JSON.stringify(manifestData)], {type: 'application/json'});
+const manifestURL = URL.createObjectURL(manifestBlob);
+const manifestLink = document.createElement('link');
+manifestLink.rel = 'manifest';
+manifestLink.href = manifestURL;
+document.head.appendChild(manifestLink);
+
+// 2. INLINE SERVICE WORKER GENERATION (Offline Mode)
+const swCode = `
+  self.addEventListener('install', e => e.waitUntil(self.skipWaiting()));
+  self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+  self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
+`;
+const swBlob = new Blob([swCode], {type: 'text/javascript'});
+const swURL = URL.createObjectURL(swBlob);
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register(swURL).catch(console.error);
+}
+
+// 3. PWA INSTALL PROMPT HANDLER
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('install-btn').style.display = 'inline-flex';
+});
+
+function installPWA() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => {
+      deferredPrompt = null;
+      document.getElementById('install-btn').style.display = 'none';
+    });
+  }
+}
+</script>
+
+<script>
+const TASKS_KEY = 'work-journal-tasks-v6';
+const USER_DATA_KEY = 'work-journal-user-data-v6';
+
+let tasks = [];
+let currentDifficulty = 'easy';
+
+let userData = { gold: 0, xp: 0, inventory: [], equipped: [], streak: 0 };
+
+const DIFFICULTY_CONFIG = {
+  easy: { name: 'Հեշտ', xp: 10, gold: 10 },
+  medium: { name: 'Միջին', xp: 15, gold: 15 },
+  hard: { name: 'Դժվար', xp: 22, gold: 22 }
+};
+
+const SHOP_ITEMS = [
+  { id: 'cloak', name: 'Մոխրագույն Թիկնոց', price: 30, icon: '🧥' },
+  { id: 'skull_necklace', name: 'Գանգերով Վզնոց', price: 35, icon: '💀' },
+  { id: 'crown', name: 'Ոսկե Թագ', price: 45, icon: '👑' },
+  { id: 'helmet', name: 'Ասպետի Սաղավարտ', price: 50, icon: '🪖' },
+  { id: 'necromancer_hood', name: 'Մութ Կապյուշոն', price: 55, icon: '🖤' },
+  { id: 'shield', name: 'Լույսի Վահան', price: 65, icon: '🛡️' },
+  { id: 'armor', name: 'Ասպետի Զրահ', price: 70, icon: '🎽' },
+  { id: 'royal_cloak', name: 'Թագավորական Թիկնոց', price: 90, icon: '🍷' },
+  { id: 'sword', name: 'Անմահ Թուր', price: 100, icon: '⚔️' },
+  { id: 'dark_staff', name: 'Ստվերային Գավազան', price: 120, icon: '🔮' },
+  { id: 'aura', name: 'Ոսկե Աուրա', price: 150, icon: '✨' },
+  { id: 'dark_aura', name: 'Մռայլ Ստվեր', price: 160, icon: '🟣' }
+];
+
+const RANKS = ['Ստվերի Նորեկ', 'Մոխրի Աշակերտ', 'Կրակի Հետևորդ', 'Գիշերային Արհեստավոր', 'Ստվերների Վարպետ', 'Անմահ Գրիչ', 'Լեգենդար Ասպետ'];
+
+function toggleAudio() {
+  const audio = document.getElementById('bg-music');
+  const btn = document.getElementById('audio-toggle-btn');
+  if (audio.paused) {
+    audio.play().then(() => {
+      btn.textContent = '🎵 Golden Brown: Միացված';
+      btn.style.borderColor = 'var(--success)';
+    }).catch(() => showLore('Աուդիո Սխալ', 'Սեղմեք կրկին նվագարկելու համար։'));
+  } else {
+    audio.pause();
+    btn.textContent = '🎵 Golden Brown: Անջատված';
+    btn.style.borderColor = 'var(--gold)';
+  }
+}
+
+/* Touch & Eye tracking */
+const leftEye = document.getElementById('left-eye');
+const rightEye = document.getElementById('right-eye');
+const svgChar = document.getElementById('necromancer');
+const avatarBox = document.getElementById('avatar-box');
+
+function moveEyes(clientX, clientY) {
+  if(!svgChar) return;
+  const rect = svgChar.getBoundingClientRect();
+  const characterCenterX = rect.left + rect.width / 2;
+  const characterCenterY = rect.top + rect.height / 3;
+  const angle = Math.atan2(clientY - characterCenterY, clientX - characterCenterX);
+  const moveX = Math.cos(angle) * 1.2;
+  const moveY = Math.sin(angle) * 1.2;
+  leftEye.style.transform = `translate(${moveX}px, ${moveY}px)`;
+  rightEye.style.transform = `translate(${moveX}px, ${moveY}px)`;
+}
+
+document.addEventListener('mousemove', (e) => moveEyes(e.clientX, e.clientY));
+document.addEventListener('touchmove', (e) => {
+  if(e.touches.length > 0) moveEyes(e.touches[0].clientX, e.touches[0].clientY);
+});
+
+svgChar.addEventListener('click', (e) => {
+  const rect = avatarBox.getBoundingClientRect();
+  const clickX = e.clientX - rect.left;
+  const clickY = e.clientY - rect.top;
+  const colors = ['#E100FF', '#9D00FF', '#FF0055', '#E9C860', '#FFFFFF'];
+
+  for (let i = 0; i < 14; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'magic-particle';
+    const size = Math.random() * 5 + 3;
+    particle.style.width = `${size}px`;
+    particle.style.height = `${size}px`;
+    particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    particle.style.left = `${clickX}px`;
+    particle.style.top = `${clickY}px`;
+
+    const angle = Math.random() * Math.PI * 2;
+    const distance = Math.random() * 50 + 15;
+    particle.style.setProperty('--dx', `${Math.cos(angle) * distance}px`);
+    particle.style.setProperty('--dy', `${Math.sin(angle) * distance}px`);
+
+    avatarBox.appendChild(particle);
+    setTimeout(() => particle.remove(), 800);
+  }
+});
+
+function setDifficulty(diff){
+  currentDifficulty = diff;
+  document.querySelectorAll('.diff-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-diff') === diff);
+  });
+}
+
+function loadAll(){
+  try{ tasks = JSON.parse(localStorage.getItem(TASKS_KEY)) || []; }catch(e){ tasks = []; }
+  try{ userData = JSON.parse(localStorage.getItem(USER_DATA_KEY)) || userData; }catch(e){}
+  render();
+}
+
+function saveTasks(){ localStorage.setItem(TASKS_KEY, JSON.stringify(tasks)); }
+function saveUserData(){ localStorage.setItem(USER_DATA_KEY, JSON.stringify(userData)); }
+
+function levelFromXP(xp){
+  let level = 1, remaining = xp, needed = 100;
+  while(remaining >= needed){
+    remaining -= needed;
+    level++;
+    needed = 100 + (level-1)*50;
+  }
+  return {level, xpIntoLevel: remaining, xpForNext: needed};
+}
+
+function showLore(title, text){
+  const el = document.getElementById('lore-toast');
+  document.getElementById('lore-title').textContent = title;
+  document.getElementById('lore-text').textContent = text;
+  el.classList.add('show');
+  setTimeout(()=> el.classList.remove('show'), 3500);
+}
+
+function updateCharacterVisuals() {
+  SHOP_ITEMS.forEach(item => {
+    const layer = document.getElementById('layer-' + item.id);
+    if(layer) layer.style.display = userData.equipped.includes(item.id) ? 'block' : 'none';
+  });
+}
+
+function render(){
+  const {level, xpIntoLevel, xpForNext} = levelFromXP(userData.xp);
+  document.getElementById('rank-title').textContent = RANKS[Math.min(level-1, RANKS.length-1)];
+  document.getElementById('level-badge').textContent = 'Մակարդակ ' + level;
+  document.getElementById('gold-val').textContent = userData.gold;
+
+  const pct = Math.min(100, Math.round((xpIntoLevel/xpForNext)*100));
+  document.getElementById('xp-fill').style.width = pct + '%';
+  document.getElementById('xp-label').textContent = xpIntoLevel + ' / ' + xpForNext + ' XP';
+
+  updateCharacterVisuals();
+
+  const tasksList = document.getElementById('tasks-list');
+  if(tasks.length === 0){
+    tasksList.innerHTML = '<div style="text-align:center; color:var(--text-muted); font-size:12px; padding:10px;">Առաջադրանքներ չկան։</div>';
+  } else {
+    tasksList.innerHTML = tasks.map(t => {
+      const cfg = DIFFICULTY_CONFIG[t.difficulty];
+      let statusHtml = t.status === 'pending' ? `
+        <div class="task-actions">
+          <button class="btn-success" onclick="completeTask('${t.id}', true)">✓ Կատարվեց</button>
+          <button class="btn-danger" onclick="completeTask('${t.id}', false)">✕ Չստացվեց</button>
+        </div>` : `<div style="font-size:11px; font-weight:bold; color:${t.status==='done'?'var(--success)':'var(--danger)'}">${t.status==='done'?'✓ Կատարված է':'✕ Չի կատարվել'}</div>`;
+
+      return `<div class="task-card">
+        <div class="task-header">
+          <span class="task-title">${t.title}</span>
+          <span style="font-size:10px; color:var(--gold);">${cfg.name}</span>
+        </div>
+        ${statusHtml}
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('shop-grid').innerHTML = SHOP_ITEMS.map(item => {
+    const owned = userData.inventory.includes(item.id);
+    return `<div class="item-card">
+      <div style="font-size:20px;">${item.icon}</div>
+      <div class="item-title">${item.name}</div>
+      <div class="item-price">🪙 ${item.price}</div>
+      ${owned ? '<button class="secondary" disabled>Գնված</button>' : `<button onclick="buyItem('${item.id}')">Գնել</button>`}
+    </div>`;
+  }).join('');
+
+  const invGrid = document.getElementById('inventory-grid');
+  if(userData.inventory.length === 0){
+    invGrid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); font-size:12px;">Ինվենտարը դատարկ է։</div>';
+  } else {
+    invGrid.innerHTML = userData.inventory.map(itemId => {
+      const item = SHOP_ITEMS.find(x => x.id === itemId);
+      if(!item) return '';
+      const isEquipped = userData.equipped.includes(itemId);
+      return `<div class="item-card ${isEquipped?'equipped':''}" onclick="toggleEquip('${itemId}')">
+        <div style="font-size:20px;">${item.icon}</div>
+        <div class="item-title">${item.name}</div>
+        <div style="font-size:10px; color:var(--gold); margin-top:2px;">${isEquipped ? '✓ Հագած' : 'Հագնել'}</div>
+      </div>`;
+    }).join('');
+  }
+}
+
+document.getElementById('add-task-btn').addEventListener('click', () => {
+  const input = document.getElementById('task-title-input');
+  const title = input.value.trim();
+  if(!title) return;
+
+  tasks.unshift({ id: 't_' + Date.now(), title, difficulty: currentDifficulty, status: 'pending' });
+  input.value = '';
+  saveTasks();
+  render();
+});
+
+function completeTask(id, success){
+  const task = tasks.find(t => t.id === id);
+  if(!task || task.status !== 'pending') return;
+
+  if(success){
+    task.status = 'done';
+    const cfg = DIFFICULTY_CONFIG[task.difficulty];
+    userData.xp += cfg.xp;
+    userData.gold += cfg.gold;
+    showLore('Կատարվեց!', `+${cfg.xp} XP | +🪙 ${cfg.gold} Ոսկի`);
+  } else {
+    task.status = 'failed';
+  }
+
+  saveTasks();
+  saveUserData();
+  render();
+}
+
+function buyItem(itemId){
+  const item = SHOP_ITEMS.find(x => x.id === itemId);
+  if(!item) return;
+  if(userData.gold < item.price){
+    showLore('Ոսկին չի հերիքում', 'Կատարիր առաջադրանքներ։');
+    return;
+  }
+  userData.gold -= item.price;
+  userData.inventory.push(itemId);
+  userData.equipped.push(itemId);
+  saveUserData();
+  render();
+}
+
+function toggleEquip(itemId){
+  if(userData.equipped.includes(itemId)){
+    userData.equipped = userData.equipped.filter(x => x !== itemId);
+  } else {
+    userData.equipped.push(itemId);
+  }
+  saveUserData();
+  render();
+}
+
+loadAll();
+</script>
+</body>
+</html>
